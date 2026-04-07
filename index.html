@@ -786,17 +786,22 @@ footer span { font-family:'Bebas Neue', sans-serif; font-size:13px;  }
         <div style="font-family:'Bebas Neue',sans-serif; font-size:42px; letter-spacing:3px; color:#fff;">CULTUREKEEPA</div>
       </div>
 
+      <!-- ── VIDEO PLAYER ──
+           Your video file should be in the BBP-Stream folder alongside this HTML file.
+           Replace "announcement.mp4" below with your exact filename.
+           Example: src="myvideo.mp4"
+      <!-- ── VIDEO PLAYER ──
+           To swap your video, replace the file ID in the src below.
+           The file ID is the long string in your Google Drive share URL.
+           Current file ID: 1c03ilq_Cm7fgYcSXJPboTuQ4zbe9UH2V
       -->
-      <video
-        id="ck-video"
-        controls
+      <iframe
+        src="https://drive.google.com/file/d/1c03ilq_Cm7fgYcSXJPboTuQ4zbe9UH2V/preview"
         width="100%"
-        style="display:block; border:1px solid #222; border-radius:4px; background:#0a0a0a; max-height:62vh;"
-        src="https://drive.google.com/uc?export=preview&id=1c03ilq_Cm7fgYcSXJPboTuQ4zbe9UH2V"
-        poster=""
-      >
-        Your browser does not support the video element.
-      </video>
+        style="display:block; border:1px solid #222; border-radius:4px; background:#0a0a0a; height:62vh;"
+        allow="autoplay"
+        allowfullscreen
+      ></iframe>
       <!-- ── END VIDEO PLAYER ── -->
 
       <!-- META BELOW PLAYER -->
