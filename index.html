@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBP Stream</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#000;
+  --off-black:#0a0a0a;
+  --dark:#111;
+  --mid:#1a1a1a;
+  --border:#222;
+  --border-light:#333;
+  --text:#fff;
+  --text-dim:#aaa;
+  --text-muted:#666;
+  --gold:#fff;
+  --gold-dim:#555;
+  --white:#fff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Space Mono', monospace;
+  background:var(--black);
+  color:var(--text);
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* ── GRAIN OVERLAY ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:9000; pointer-events:none;
+  opacity:0.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size:180px;
+}
+
+/* ── PAGE TRANSITION ── */
+.curtain {
+  position:fixed; inset:0; background:var(--black); z-index:9999;
+  transform:scaleY(0); transform-origin:bottom; pointer-events:none;
+}
+.curtain.in  { animation:cIn  0.45s cubic-bezier(.76,0,.24,1) forwards; }
+.curtain.out { animation:cOut 0.45s cubic-bezier(.76,0,.24,1) forwards; }
+@keyframes cIn  { to{transform:scaleY(1)} }
+@keyframes cOut { from{transform:scaleY(1)} to{transform:scaleY(0); transform-origin:top;} }
+
+/* ── VIEWS ── */
+.view { display:none; }
+.view.active { display:block; }
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; width:100%; z-index:1000;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:22px 48px;
+  background:linear-gradient(to bottom, rgba(10,10,10,0.98) 0%, rgba(10,10,10,0) 100%);
+  transition:background 0.4s;
+}
+nav.scrolled { background:rgba(10,10,10,0.97); border-bottom:1px solid var(--border); }
+.nav-logo {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:22px;  letter-spacing:6px; text-transform:uppercase;
+  color:var(--text); cursor:pointer;
+}
+.nav-logo span { color:var(--gold); }
+.nav-links {
+  display:flex; gap:36px; align-items:center;
+  font-size:10px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase;
+}
+.nav-links span { cursor:pointer; transition:color 0.2s; }
+.nav-links span:hover { color:var(--text); }
+.nav-sign-in {
+  padding:8px 20px; border:1px solid var(--border-light); border-radius:2px;
+  font-size:10px; letter-spacing:2px; color:var(--text-dim); cursor:pointer;
+  transition:0.3s; text-transform:uppercase;
+}
+.nav-sign-in:hover { border-color:var(--gold); color:var(--gold); }
+
+/* ══════════════════════════════════
+   HOME / BROWSE VIEW
+══════════════════════════════════ */
+
+/* ── HERO FEATURE ── */
+.hero-feature {
+  position:relative; height:92vh; display:flex; align-items:flex-end;
+  overflow:hidden; padding:0 48px 80px;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg, #0d0d12 0%, #111108 40%, #0d100d 100%);
+}
+.hero-bg-letters {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:'Bebas Neue', sans-serif;
+  font-size:clamp(120px, 22vw, 320px);  letter-spacing:0.05em;
+  color:rgba(255,255,255,0.025); user-select:none; pointer-events:none;
+  white-space:nowrap;
+}
+.hero-gradient {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.6) 40%, rgba(10,10,10,0) 70%),
+             linear-gradient(to right, rgba(10,10,10,0.8) 0%, rgba(10,10,10,0) 50%);
+}
+.hero-content { position:relative; z-index:2; max-width:680px; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:9px; letter-spacing:3px; color:var(--gold); text-transform:uppercase;
+  margin-bottom:20px;
+}
+.hero-badge::before {
+  content:''; width:24px; height:1px; background:var(--gold);
+}
+.hero-title {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:clamp(60px, 9vw, 110px); line-height:1.0;
+  letter-spacing:4px; color:var(--text); margin-bottom:18px;
+}
+.hero-title em { color:var(--gold); }
+.hero-meta {
+  font-size:10px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase;
+  margin-bottom:16px; display:flex; gap:20px; align-items:center;
+}
+.hero-meta-dot { width:3px; height:3px; border-radius:50%; background:var(--text-muted); }
+.hero-desc {
+  font-family:'Space Mono', monospace;
+  font-size:13px; line-height:1.8; color:var(--text-dim);
+  max-width:500px; margin-bottom:36px;
+}
+.hero-actions { display:flex; gap:14px; align-items:center; }
+.btn-primary {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 32px; background:var(--text); color:var(--black);
+  font-family:'Space Mono', monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  border:none; cursor:pointer; transition:0.3s; border-radius:2px;
+}
+.btn-primary:hover { background:var(--gold); }
+.btn-primary svg { width:14px; height:14px; }
+.btn-secondary {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 28px; background:transparent; color:var(--text-dim);
+  font-family:'Space Mono', monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  border:1px solid var(--border-light); cursor:pointer; transition:0.3s; border-radius:2px;
+}
+.btn-secondary:hover { border-color:var(--text-dim); color:var(--text); }
+
+/* ── CATALOG ROWS ── */
+.catalog { padding:0 48px 80px; }
+.row { margin-bottom:52px; }
+.row-label {
+  font-size:9px; letter-spacing:3px; color:var(--text-muted); text-transform:uppercase;
+  margin-bottom:20px; display:flex; align-items:center; gap:16px;
+}
+.row-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.cards { display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none; }
+.cards::-webkit-scrollbar { display:none; }
+
+.card {
+  flex-shrink:0; width:240px; cursor:pointer; position:relative;
+  border-radius:3px; overflow:hidden; transition:transform 0.3s;
+}
+.card:hover { transform:scale(1.03); }
+.card-thumb {
+  width:240px; height:140px; position:relative; overflow:hidden;
+  background:var(--off-black);
+  display:flex; align-items:center; justify-content:center;
+}
+.card-thumb-letter {
+  font-family:'Bebas Neue', sans-serif; font-size:72px; 
+  color:var(--border-light); letter-spacing:4px;
+}
+.card-thumb-grad {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0) 60%);
+}
+.card-locked-badge {
+  position:absolute; top:10px; right:10px;
+  background:rgba(10,10,10,0.85); border:1px solid var(--gold-dim);
+  padding:3px 8px; font-size:8px; letter-spacing:2px; color:var(--gold); text-transform:uppercase;
+  border-radius:2px;
+}
+.card-coming-badge {
+  position:absolute; top:10px; right:10px;
+  background:rgba(10,10,10,0.85); border:1px solid var(--border-light);
+  padding:3px 8px; font-size:8px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase;
+  border-radius:2px;
+}
+.card-info { padding:12px 4px 4px; }
+.card-title {
+  font-family:'Bebas Neue', sans-serif; font-size:18px; letter-spacing:2px;
+  color:var(--text); margin-bottom:4px; line-height:1.2;
+}
+.card-sub { font-size:9px; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; }
+
+/* ── COMING SOON BANNER ── */
+.coming-soon-banner {
+  margin:0 48px 52px; border:1px solid var(--border); border-radius:3px;
+  padding:40px 48px; display:flex; align-items:center; justify-content:space-between;
+  background:linear-gradient(135deg, var(--off-black) 0%, var(--black) 100%);
+  position:relative; overflow:hidden; cursor:pointer; transition:border-color 0.3s;
+}
+.coming-soon-banner:hover { border-color:var(--gold-dim); }
+.coming-soon-banner::before {
+  content:'RESTRICTED'; position:absolute; right:-20px; top:50%; transform:translateY(-50%);
+  font-family:'Bebas Neue', sans-serif; font-size:120px; 
+  color:rgba(255,255,255,0.02); letter-spacing:10px; user-select:none; white-space:nowrap;
+}
+.csb-left {}
+.csb-label { font-size:9px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:12px; }
+.csb-title { font-family:'Bebas Neue', sans-serif; font-size:32px;  color:var(--text); margin-bottom:8px; }
+.csb-sub { font-size:10px; letter-spacing:1px; color:var(--text-muted); }
+.csb-right { text-align:right; }
+.csb-icon {
+  width:48px; height:48px; border:1px solid var(--border-light); border-radius:50%;
+  display:flex; align-items:center; justify-content:center; margin-left:auto; margin-bottom:12px;
+}
+.csb-icon svg { width:18px; height:18px; color:var(--text-dim); }
+.csb-hint { font-size:9px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; }
+
+/* ══════════════════════════════════
+   FILM DETAIL VIEW
+══════════════════════════════════ */
+.film-hero {
+  position:relative; height:70vh; display:flex; align-items:flex-end;
+  padding:0 48px 60px; overflow:hidden;
+}
+.film-hero-bg {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+}
+.film-hero-bg-text {
+  font-family:'Bebas Neue', sans-serif; font-size:260px; 
+  color:rgba(255,255,255,0.025); letter-spacing:10px; user-select:none;
+}
+.film-hero-grad {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, var(--black) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.2) 100%),
+             linear-gradient(to right, rgba(10,10,10,0.7) 0%, transparent 60%);
+}
+.film-back {
+  position:absolute; top:110px; left:48px;
+  font-size:10px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase;
+  cursor:pointer; transition:color 0.2s; display:flex; align-items:center; gap:8px; z-index:2;
+}
+.film-back:hover { color:var(--text); }
+.film-back::before { content:'←'; }
+.film-hero-content { position:relative; z-index:2; max-width:700px; }
+.film-badge {
+  font-size:9px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:16px;
+  display:flex; align-items:center; gap:10px;
+}
+.film-badge::before { content:''; width:20px; height:1px; background:var(--gold); }
+.film-title {
+  font-family:'Bebas Neue', sans-serif; font-size:clamp(44px,7vw,82px);
+  line-height:1; letter-spacing:4px; color:var(--text); margin-bottom:16px;
+}
+.film-meta-row {
+  display:flex; gap:16px; align-items:center;
+  font-size:10px; letter-spacing:1.5px; color:var(--text-muted); text-transform:uppercase; margin-bottom:24px;
+}
+.film-meta-sep { color:var(--border-light); }
+.film-actions { display:flex; gap:12px; }
+
+.film-body { max-width:1200px; margin:auto; padding:60px 48px; display:grid; grid-template-columns:2fr 1fr; gap:80px; }
+.film-desc {
+  font-family:'Space Mono', monospace; font-size:13px;
+  line-height:1.9; color:var(--text-dim); margin-bottom:40px;
+}
+.film-desc p { margin-bottom:20px; }
+.film-acts-title {
+  font-size:9px; letter-spacing:3px; color:var(--text-muted); text-transform:uppercase;
+  margin-bottom:24px; display:flex; align-items:center; gap:16px;
+}
+.film-acts-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.film-acts { display:flex; flex-direction:column; gap:1px; }
+.film-act {
+  padding:20px 0; border-bottom:1px solid var(--border);
+  display:flex; gap:24px; align-items:flex-start; transition:0.2s;
+}
+.film-act:first-child { border-top:1px solid var(--border); }
+.film-act:hover { padding-left:8px; }
+.act-n {
+  font-family:'Bebas Neue', sans-serif; font-size:36px;
+  color:var(--text-muted); line-height:1; min-width:36px;
+}
+.act-text {}
+.act-name-sm {
+  font-family:'Bebas Neue', sans-serif; font-size:20px; letter-spacing:2px;
+  color:var(--text); margin-bottom:6px;
+}
+.act-desc-sm { font-size:11px; color:var(--text-muted); line-height:1.7; }
+
+.film-sidebar {}
+.sidebar-block { border-top:1px solid var(--border); padding:20px 0; }
+.sidebar-block:first-child { border-top:none; padding-top:0; }
+.sidebar-label { font-size:9px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; }
+.sidebar-value { font-family:'Space Mono', monospace; font-size:12px; color:var(--text-dim); line-height:1.6; }
+.sidebar-status-active { color:#8aff80; }
+.sidebar-status-dev { color:var(--text-muted); }
+
+/* ══════════════════════════════════
+   LOCKED / COMING SOON VIEW
+══════════════════════════════════ */
+.locked-view {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden; padding-top:80px;
+}
+.locked-bg {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:'Bebas Neue', sans-serif; font-size:280px; 
+  color:rgba(255,255,255,0.015); letter-spacing:12px; user-select:none; pointer-events:none;
+}
+.locked-content { position:relative; z-index:2; text-align:center; max-width:480px; padding:40px; }
+.locked-icon {
+  width:64px; height:64px; border:1px solid var(--border-light); border-radius:50%;
+  display:flex; align-items:center; justify-content:center; margin:0 auto 32px;
+}
+.locked-icon svg { width:24px; height:24px; color:var(--text-muted); }
+.locked-eyebrow { font-size:9px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:16px; }
+.locked-title {
+  font-family:'Bebas Neue', sans-serif; font-size:56px; letter-spacing:4px;
+  color:var(--text); line-height:1; margin-bottom:16px;
+}
+.locked-sub {
+  font-family:'Space Mono', monospace; font-size:12px;
+  color:var(--text-dim); line-height:1.8; margin-bottom:36px;
+}
+.locked-rule { width:40px; height:1px; background:var(--border-light); margin:0 auto 36px; }
+.locked-input {
+  width:100%; padding:14px 20px; background:transparent; border:1px solid var(--border-light);
+  color:var(--text); font-family:'Space Mono', monospace; font-size:12px; letter-spacing:1px;
+  border-radius:2px; text-align:center; outline:none; transition:border-color 0.3s;
+  margin-bottom:12px;
+}
+.locked-input::placeholder { color:var(--text-muted); }
+.locked-input:focus { border-color:var(--gold-dim); }
+.locked-input.wrong { border-color:#8a4040; animation:shake 0.4s ease; }
+.locked-input.right { border-color:#4a8a5a; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+.locked-btn {
+  width:100%; padding:14px; background:transparent; border:1px solid var(--border-light);
+  color:var(--text-dim); font-family:'Space Mono', monospace; font-size:11px; letter-spacing:2px;
+  text-transform:uppercase; cursor:pointer; border-radius:2px; transition:0.3s;
+}
+.locked-btn:hover { border-color:var(--gold-dim); color:var(--gold); }
+.locked-back {
+  display:inline-block; margin-top:32px; font-size:10px; letter-spacing:2px;
+  color:var(--text-muted); text-transform:uppercase; cursor:pointer; transition:0.2s;
+}
+.locked-back:hover { color:var(--text); }
+.locked-back::before { content:'← '; }
+.locked-hint { font-size:10px; color:var(--text-muted); margin-top:12px; letter-spacing:1px; }
+
+/* ── FOOTER ── */
+footer {
+  border-top:1px solid var(--border); padding:32px 48px;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:10px; letter-spacing:1px; color:var(--text-muted);
+}
+footer span { font-family:'Bebas Neue', sans-serif; font-size:13px;  }
+
+/* ── FADE ── */
+.fade-up { opacity:0; transform:translateY(16px); transition:0.7s ease; }
+.fade-up.show { opacity:1; transform:none; }
+
+@media(max-width:768px){
+  nav { padding:18px 24px; }
+  .hero-feature, .catalog, .coming-soon-banner, .film-hero, .film-body { padding-left:24px; padding-right:24px; }
+  .hero-title { font-size:44px; }
+  .film-title { font-size:40px; }
+  .film-body { grid-template-columns:1fr; gap:40px; }
+  .nav-links { gap:16px; font-size:9px; }
+  .coming-soon-banner { flex-direction:column; gap:24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="curtain" id="curtain"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo" onclick="goTo('home')">BBP<span>.</span>STREAM</div>
+  <div class="nav-links">
+    <span onclick="goTo('home')">Browse</span>
+    <span onclick="goTo('film-ck')">Originals</span>
+    <span onclick="goTo('locked')">COMING SOON</span>
+  </div>
+  <div class="nav-sign-in">Sign In</div>
+</nav>
+
+<!-- ══════════════════════
+     HOME / BROWSE VIEW
+══════════════════════ -->
+<div id="view-home" class="view active">
+
+  <!-- HERO FEATURE -->
+  <div class="hero-feature">
+    <div class="hero-bg"></div>
+    <div class="hero-bg-letters">CULTUREKEEPA</div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <div class="hero-badge">BBP Original · Featured Film</div>
+      <div class="hero-title">CULTURE<span style="color:var(--text-dim)">KEEPA</span></div>
+      <div class="hero-meta">
+        <span>Documentary</span>
+        <div class="hero-meta-dot"></div>
+        <span>3 Acts</span>
+        <div class="hero-meta-dot"></div>
+        <span>Summer 2026</span>
+        <div class="hero-meta-dot"></div>
+        <span>In Development</span>
+      </div>
+      <div class="hero-desc">
+        A feature-length documentary exploring what it means to be young, Black, and Southern. Three acts. Unfiltered voices. A foundation, not a footnote.
+      </div>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="goTo('film-ck')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          View Film
+        </button>
+        <button class="btn-secondary" onclick="goTo('locked')">+ Watchlist</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATALOG -->
+  <div class="catalog">
+
+    <div class="row fade-up">
+      <div class="row-label">BBP Originals</div>
+      <div class="cards">
+
+        <div class="card" onclick="goTo('film-ck')">
+          <div class="card-thumb">
+            <div class="card-thumb-letter">CK</div>
+            <div class="card-thumb-grad"></div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">CULTUREKEEPA</div>
+            <div class="card-sub">Feature Documentary · 2026</div>
+          </div>
+        </div>
+
+        <div class="card" onclick="goTo('film-fs')">
+          <div class="card-thumb">
+            <div class="card-thumb-letter">FS</div>
+            <div class="card-thumb-grad"></div>
+            <div class="card-coming-badge">In Dev</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">FRESHMAN SUMMER</div>
+            <div class="card-sub">Documentary Short · 2026</div>
+          </div>
+        </div>
+
+        <div class="card" onclick="goTo('locked')">
+          <div class="card-thumb">
+            <div class="card-thumb-letter">UN</div>
+            <div class="card-thumb-grad"></div>
+            <div class="card-locked-badge">Locked</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">UNTITLED NARRATIVE</div>
+            <div class="card-sub">Short Film · TBA</div>
+          </div>
+        </div>
+
+        <div class="card" onclick="goTo('locked')">
+          <div class="card-thumb" style="background:var(--dark)">
+            <div class="card-thumb-letter" style="color:var(--mid)">?</div>
+            <div class="card-thumb-grad"></div>
+            <div class="card-locked-badge">Locked</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">UNTITLED PROJECT</div>
+            <div class="card-sub">Details Forthcoming</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="row fade-up">
+      <div class="row-label">Documentary Series</div>
+      <div class="cards">
+
+        <div class="card" onclick="goTo('locked')">
+          <div class="card-thumb">
+            <div class="card-thumb-letter">HC</div>
+            <div class="card-thumb-grad"></div>
+            <div class="card-locked-badge">Locked</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">HOMECOMING</div>
+            <div class="card-sub">Series · Part I · TBA</div>
+          </div>
+        </div>
+
+        <div class="card" onclick="goTo('locked')">
+          <div class="card-thumb">
+            <div class="card-thumb-letter">TC</div>
+            <div class="card-thumb-grad"></div>
+            <div class="card-locked-badge">Locked</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">TIMECOMING</div>
+            <div class="card-sub">Series · Part II · TBA</div>
+          </div>
+        </div>
+
+        <div class="card" onclick="goTo('locked')">
+          <div class="card-thumb">
+            <div class="card-thumb-letter">EC</div>
+            <div class="card-thumb-grad"></div>
+            <div class="card-locked-badge">Locked</div>
+          </div>
+          <div class="card-info">
+            <div class="card-title">ENDCOMING</div>
+            <div class="card-sub">Series · Part III · TBA</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- COMING SOON BANNER -->
+  <div class="coming-soon-banner fade-up" onclick="goTo('locked')">
+    <div class="csb-left">
+      <div class="csb-label">Restricted Access</div>
+      <div class="csb-title">Unreleased Projects</div>
+      <div class="csb-sub">Early access available for press & collaborators.</div>
+    </div>
+    <div class="csb-right">
+      <div class="csb-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div class="csb-hint">Enter Access Code →</div>
+    </div>
+  </div>
+
+  <footer>
+    <div>© 2026 Big Boy Pictures</div>
+    <span>BBP.Stream — Official Platform</span>
+    <div>Independent Media</div>
+  </footer>
+
+</div><!-- /home -->
+
+
+<!-- ══════════════════════
+     FILM: CULTUREKEEPA
+══════════════════════ -->
+<div id="view-film-ck" class="view">
+  <div class="film-hero">
+    <div class="film-hero-bg"><div class="film-hero-bg-text">CK</div></div>
+    <div class="film-hero-grad"></div>
+    <div class="film-back" onclick="goTo('home')">Browse</div>
+    <div class="film-hero-content">
+      <div class="film-badge">BBP Original · Feature Documentary</div>
+      <div class="film-title">CULTUREKEEPA</div>
+      <div class="film-meta-row">
+        <span>2026</span><span class="film-meta-sep">·</span>
+        <span>3 Acts</span><span class="film-meta-sep">·</span>
+        <span>Documentary</span><span class="film-meta-sep">·</span>
+        <span>Southern Black Identity</span>
+      </div>
+      <div class="film-actions">
+        <button class="btn-primary" onclick="goTo('player')">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><path d="M8 5v14l11-7z"/></svg>
+          Coming Summer 2026
+        </button>
+        <button class="btn-secondary" onclick="goTo('locked')">+ Watchlist</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="film-body">
+    <div>
+      <div class="film-desc">
+        <p>CULTUREKEEPA is a feature-length documentary exploring what it means to be young, Black, and Southern in 2026. The film moves through the past, present, and future of Southern Black identity — told entirely through the voices of the people living it.</p>
+        <p>Rooted in the belief that Southern Black culture is not a footnote — it is a foundation. CULTUREKEEPA exists to document, amplify, and preserve that truth.</p>
+      </div>
+
+      <div class="film-acts-title">Three Acts</div>
+      <div class="film-acts">
+        <div class="film-act">
+          <div class="act-n">I</div>
+          <div class="act-text">
+            <div class="act-name-sm">DA ROOTS</div>
+            <div class="act-desc-sm">Where did we come from? History, legacy, and the foundations that shaped Southern Black identity.</div>
+          </div>
+        </div>
+        <div class="film-act">
+          <div class="act-n">II</div>
+          <div class="act-text">
+            <div class="act-name-sm">DA NOW</div>
+            <div class="act-desc-sm">Youth voices speak to the current moment — the pressures, pride, and contradictions of being young and Black in the South today.</div>
+          </div>
+        </div>
+        <div class="film-act">
+          <div class="act-n">III</div>
+          <div class="act-text">
+            <div class="act-name-sm">DA KEEPA</div>
+            <div class="act-desc-sm">A forward-looking meditation on preservation, ownership, and what the next generation is building.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="film-sidebar">
+      <div class="sidebar-block">
+        <div class="sidebar-label">Director</div>
+        <div class="sidebar-value">Khalil Tolbert</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Production</div>
+        <div class="sidebar-value">Big Boy Pictures</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Format</div>
+        <div class="sidebar-value">Feature Documentary</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Status</div>
+        <div class="sidebar-value sidebar-status-active">In Development — Summer 2026</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Subject</div>
+        <div class="sidebar-value">Southern Black Youth Identity & Cultural Preservation</div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div>© 2026 Big Boy Pictures</div>
+    <span>CULTUREKEEPA</span>
+    <div>BBP Original</div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════
+     FILM: FRESHMAN SUMMER
+══════════════════════ -->
+<div id="view-film-fs" class="view">
+  <div class="film-hero">
+    <div class="film-hero-bg"><div class="film-hero-bg-text">FS</div></div>
+    <div class="film-hero-grad"></div>
+    <div class="film-back" onclick="goTo('home')">Browse</div>
+    <div class="film-hero-content">
+      <div class="film-badge">BBP Original · Documentary Short</div>
+      <div class="film-title">FRESHMAN SUMMER</div>
+      <div class="film-meta-row">
+        <span>2026</span><span class="film-meta-sep">·</span>
+        <span>Short</span><span class="film-meta-sep">·</span>
+        <span>Documentary</span><span class="film-meta-sep">·</span>
+        <span>Pre-Production</span>
+      </div>
+      <div class="film-actions">
+        <button class="btn-primary" style="opacity:0.5;cursor:default">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><path d="M8 5v14l11-7z"/></svg>
+          Not Yet Available
+        </button>
+        <button class="btn-secondary" onclick="goTo('locked')">+ Watchlist</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="film-body">
+    <div>
+      <div class="film-desc">
+        <p>Freshman Summer is a documentary short capturing the final chapter of Haywood Middle School's Class of 2026. Cinematic. Verite. A real portrait of what this year meant.</p>
+        <p>The film opens with a chaotic high-energy sequence before settling into a softer, nostalgic documentary tone — mirroring the emotional arc of finishing 8th grade.</p>
+      </div>
+      <div class="film-acts-title">Film Structure</div>
+      <div class="film-acts">
+        <div class="film-act">
+          <div class="act-n">I</div>
+          <div class="act-text">
+            <div class="act-name-sm">TITLE SEQUENCE</div>
+            <div class="act-desc-sm">Chaotic black-and-white flashing intro. Brat green title card. High energy — sets the tone before the pull-in.</div>
+          </div>
+        </div>
+        <div class="film-act">
+          <div class="act-n">II</div>
+          <div class="act-text">
+            <div class="act-name-sm">THE BRIDGE</div>
+            <div class="act-desc-sm">Deliberate tonal shift — chaos to warmth. The documentary voice takes over.</div>
+          </div>
+        </div>
+        <div class="film-act">
+          <div class="act-n">III</div>
+          <div class="act-text">
+            <div class="act-name-sm">THE YEAR</div>
+            <div class="act-desc-sm">The heart of the film. Classmates, moments, memories — the Class of 2026's final chapter.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="film-sidebar">
+      <div class="sidebar-block">
+        <div class="sidebar-label">Director</div>
+        <div class="sidebar-value">Khalil Tolbert</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Production</div>
+        <div class="sidebar-value">Big Boy Pictures</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Format</div>
+        <div class="sidebar-value">Documentary Short</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Subject</div>
+        <div class="sidebar-value">Haywood Middle School — Class of 2026</div>
+      </div>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Status</div>
+        <div class="sidebar-value sidebar-status-dev">Pre-Production</div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div>© 2026 Big Boy Pictures</div>
+    <span>FRESHMAN SUMMER</span>
+    <div>BBP Original</div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════
+     LOCKED / COMING SOON
+══════════════════════ -->
+<div id="view-locked" class="view">
+  <div class="locked-view">
+    <div class="locked-bg">RESTRICTED</div>
+    <div class="locked-content">
+      <div class="locked-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div class="locked-eyebrow">Restricted Access</div>
+      <div class="locked-title">COMING SOON</div>
+      <div class="locked-sub">This content is not yet available. Press & collaborator early access available with a valid access code.</div>
+      <div class="locked-rule"></div>
+      <input class="locked-input" id="accessInput" type="text" placeholder="Enter access code" maxlength="20">
+      <button class="locked-btn" onclick="checkCode()">Request Access</button>
+      <div class="locked-hint" id="lockHint" style="opacity:0">Incorrect code. Try again.</div>
+      <div class="locked-back" onclick="goTo('home')">Back to Browse</div>
+    </div>
+  </div>
+  <footer>
+    <div>© 2026 Big Boy Pictures</div>
+    <span>BBP.Stream</span>
+    <div>Restricted</div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════
+     PLAYER VIEW
+══════════════════════ -->
+<div id="view-player" class="view">
+  <div style="padding-top:80px; min-height:100vh; background:#000;">
+
+    <div style="max-width:1100px; margin:auto; padding:40px 48px;">
+
+      <!-- BACK -->
+      <div class="film-back" style="position:static; margin-bottom:28px; display:inline-flex;" onclick="goTo('film-ck')">CULTUREKEEPA</div>
+
+      <!-- TITLE ROW -->
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:3px; color:#555; text-transform:uppercase; margin-bottom:8px;">BBP Original · Feature Documentary</div>
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:42px; letter-spacing:3px; color:#fff;">CULTUREKEEPA</div>
+      </div>
+
+      <!-- ── VIDEO PLAYER ──
+           Your video file should be in the BBP-Stream folder alongside this HTML file.
+           Replace "announcement.mp4" below with your exact filename.
+           Example: src="myvideo.mp4"
+      -->
+      <video
+        id="ck-video"
+        controls
+        width="100%"
+        style="display:block; border:1px solid #222; border-radius:4px; background:#0a0a0a; max-height:62vh;"
+        src="videos/announcement.mp4"
+        poster=""
+      >
+        Your browser does not support the video element.
+      </video>
+      <!-- ── END VIDEO PLAYER ── -->
+
+      <!-- META BELOW PLAYER -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-top:24px; padding-top:24px; border-top:1px solid #222; flex-wrap:wrap; gap:20px;">
+        <div>
+          <div style="font-size:10px; letter-spacing:2px; color:#555; text-transform:uppercase; margin-bottom:6px;">Director</div>
+          <div style="font-size:12px; color:#aaa;">Khalil Tolbert</div>
+        </div>
+        <div>
+          <div style="font-size:10px; letter-spacing:2px; color:#555; text-transform:uppercase; margin-bottom:6px;">Format</div>
+          <div style="font-size:12px; color:#aaa;">Feature Documentary</div>
+        </div>
+        <div>
+          <div style="font-size:10px; letter-spacing:2px; color:#555; text-transform:uppercase; margin-bottom:6px;">Production</div>
+          <div style="font-size:12px; color:#aaa;">Big Boy Pictures</div>
+        </div>
+        <div>
+          <div style="font-size:10px; letter-spacing:2px; color:#555; text-transform:uppercase; margin-bottom:6px;">Status</div>
+          <div style="font-size:12px; color:#8aff80;">Summer 2026</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <footer>
+    <div>© 2026 Big Boy Pictures</div>
+    <span>CULTUREKEEPA</span>
+    <div>BBP Original</div>
+  </footer>
+</div>
+
+<script>
+// ── ROUTER ──
+function goTo(page) {
+  const curtain = document.getElementById('curtain');
+  curtain.className = 'curtain in';
+  setTimeout(() => {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const target = document.getElementById('view-' + page);
+    if(target) { target.classList.add('active'); window.scrollTo(0,0); }
+    curtain.className = 'curtain out';
+    setTimeout(() => { curtain.className = 'curtain'; }, 500);
+    initFadeUps();
+    // reset locked input
+    const inp = document.getElementById('accessInput');
+    if(inp) { inp.value=''; inp.className='locked-input'; }
+    document.getElementById('lockHint').style.opacity = '0';
+  }, 450);
+}
+
+// ── NAV SCROLL ──
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// ── FADE UPS ──
+function initFadeUps() {
+  setTimeout(() => {
+    const els = document.querySelectorAll('.view.active .fade-up');
+    const check = () => els.forEach(el => {
+      if(el.getBoundingClientRect().top < window.innerHeight - 60) el.classList.add('show');
+    });
+    window.addEventListener('scroll', check);
+    check();
+  }, 100);
+}
+
+// ── ACCESS CODE ──
+function checkCode() {
+  const input = document.getElementById('accessInput');
+  const hint  = document.getElementById('lockHint');
+  const code  = input.value.trim().toUpperCase();
+  // Accepted codes
+  if(code === 'BBP2026' || code === 'KEEPA' || code === 'BIGSUMMER') {
+    input.className = 'locked-input right';
+    hint.style.opacity = '1';
+    hint.style.color = '#4a8a5a';
+    hint.textContent = 'Access granted. Content coming soon.';
+  } else {
+    input.className = 'locked-input wrong';
+    hint.style.opacity = '1';
+    hint.style.color = '';
+    hint.textContent = 'Incorrect code. Try again.';
+    setTimeout(() => { input.className = 'locked-input'; }, 500);
+  }
+}
+
+document.getElementById('accessInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') checkCode();
+});
+
+initFadeUps();
+</script>
+</body>
+</html>
