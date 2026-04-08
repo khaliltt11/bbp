@@ -387,7 +387,7 @@ footer span { font-family:'Bebas Neue', sans-serif; font-size:13px;  }
   <div class="nav-logo" onclick="goTo('home')">BBP<span>.</span>STREAM</div>
   <div class="nav-links">
     <span onclick="goTo('home')">Browse</span>
-    <span onclick="goTo('film-ck')">Originals</span>
+    <span onclick="goTo('film-ck')">CULTUREKEEPA</span>
     <span onclick="goTo('locked')">COMING SOON</span>
   </div>
   <div class="nav-sign-in">Sign In</div>
@@ -398,41 +398,21 @@ footer span { font-family:'Bebas Neue', sans-serif; font-size:13px;  }
 ══════════════════════ -->
 <div id="view-home" class="view active">
 
-  <!-- HERO FEATURE -->
-  <div class="hero-feature">
-    <div class="hero-bg"></div>
-    <div class="hero-bg-letters">CULTUREKEEPA</div>
-    <div class="hero-gradient"></div>
-    <div class="hero-content">
-      <div class="hero-badge">BBP Original · Featured Film</div>
-      <div class="hero-title">CULTURE<span style="color:var(--text-dim)">KEEPA</span></div>
-      <div class="hero-meta">
-        <span>Documentary</span>
-        <div class="hero-meta-dot"></div>
-        <span>3 Acts</span>
-        <div class="hero-meta-dot"></div>
-        <span>Summer 2026</span>
-        <div class="hero-meta-dot"></div>
-        <span>In Development</span>
-      </div>
-      <div class="hero-desc">
-        A feature-length documentary exploring what it means to be young, Black, and Southern. Three acts. Unfiltered voices. A foundation, not a footnote.
-      </div>
-      <div class="hero-actions">
-        <button class="btn-primary" onclick="goTo('film-ck')">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          View Film
-        </button>
-        <button class="btn-secondary" onclick="goTo('locked')">+ Watchlist</button>
-      </div>
+  <!-- BROWSE HEADER -->
+  <div style="padding:140px 48px 0;">
+    <div style="font-size:9px; letter-spacing:3px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:16px;">
+      <span>BBP.STREAM</span>
+      <span style="flex:1; height:1px; background:var(--border); display:block;"></span>
     </div>
+    <div style="font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,8vw,96px); letter-spacing:4px; color:var(--text); line-height:1;">ALL FILMS</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-top:12px; letter-spacing:1px;">Big Boy Pictures — Official Streaming Platform</div>
   </div>
 
-  <!-- CATALOG -->
-  <div class="catalog">
+  <!-- FEATURED FILMS -->
+  <div class="catalog" style="padding-top:60px;">
 
     <div class="row fade-up">
-      <div class="row-label">BBP Originals</div>
+      <div class="row-label">Featured Films</div>
       <div class="cards">
 
         <div class="card" onclick="goTo('film-ck')">
@@ -446,106 +426,9 @@ footer span { font-family:'Bebas Neue', sans-serif; font-size:13px;  }
           </div>
         </div>
 
-        <div class="card" onclick="goTo('film-fs')">
-          <div class="card-thumb">
-            <div class="card-thumb-letter">FS</div>
-            <div class="card-thumb-grad"></div>
-            <div class="card-coming-badge">In Dev</div>
-          </div>
-          <div class="card-info">
-            <div class="card-title">FRESHMAN SUMMER</div>
-            <div class="card-sub">Documentary Short · 2026</div>
-          </div>
-        </div>
-
-        <div class="card" onclick="goTo('locked')">
-          <div class="card-thumb">
-            <div class="card-thumb-letter">UN</div>
-            <div class="card-thumb-grad"></div>
-            <div class="card-locked-badge">Locked</div>
-          </div>
-          <div class="card-info">
-            <div class="card-title">UNTITLED NARRATIVE</div>
-            <div class="card-sub">Short Film · TBA</div>
-          </div>
-        </div>
-
-        <div class="card" onclick="goTo('locked')">
-          <div class="card-thumb" style="background:var(--dark)">
-            <div class="card-thumb-letter" style="color:var(--mid)">?</div>
-            <div class="card-thumb-grad"></div>
-            <div class="card-locked-badge">Locked</div>
-          </div>
-          <div class="card-info">
-            <div class="card-title">UNTITLED PROJECT</div>
-            <div class="card-sub">Details Forthcoming</div>
-          </div>
-        </div>
-
       </div>
     </div>
 
-    <div class="row fade-up">
-      <div class="row-label">Documentary Series</div>
-      <div class="cards">
-
-        <div class="card" onclick="goTo('locked')">
-          <div class="card-thumb">
-            <div class="card-thumb-letter">HC</div>
-            <div class="card-thumb-grad"></div>
-            <div class="card-locked-badge">Locked</div>
-          </div>
-          <div class="card-info">
-            <div class="card-title">HOMECOMING</div>
-            <div class="card-sub">Series · Part I · TBA</div>
-          </div>
-        </div>
-
-        <div class="card" onclick="goTo('locked')">
-          <div class="card-thumb">
-            <div class="card-thumb-letter">TC</div>
-            <div class="card-thumb-grad"></div>
-            <div class="card-locked-badge">Locked</div>
-          </div>
-          <div class="card-info">
-            <div class="card-title">TIMECOMING</div>
-            <div class="card-sub">Series · Part II · TBA</div>
-          </div>
-        </div>
-
-        <div class="card" onclick="goTo('locked')">
-          <div class="card-thumb">
-            <div class="card-thumb-letter">EC</div>
-            <div class="card-thumb-grad"></div>
-            <div class="card-locked-badge">Locked</div>
-          </div>
-          <div class="card-info">
-            <div class="card-title">ENDCOMING</div>
-            <div class="card-sub">Series · Part III · TBA</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-
-  <!-- COMING SOON BANNER -->
-  <div class="coming-soon-banner fade-up" onclick="goTo('locked')">
-    <div class="csb-left">
-      <div class="csb-label">Restricted Access</div>
-      <div class="csb-title">Unreleased Projects</div>
-      <div class="csb-sub">Early access available for press & collaborators.</div>
-    </div>
-    <div class="csb-right">
-      <div class="csb-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-      </div>
-      <div class="csb-hint">Enter Access Code →</div>
-    </div>
   </div>
 
   <footer>
@@ -643,96 +526,6 @@ footer span { font-family:'Bebas Neue', sans-serif; font-size:13px;  }
   <footer>
     <div>© 2026 Big Boy Pictures</div>
     <span>CULTUREKEEPA</span>
-    <div>BBP Original</div>
-  </footer>
-</div>
-
-
-<!-- ══════════════════════
-     FILM: FRESHMAN SUMMER
-══════════════════════ -->
-<div id="view-film-fs" class="view">
-  <div class="film-hero">
-    <div class="film-hero-bg"><div class="film-hero-bg-text">FS</div></div>
-    <div class="film-hero-grad"></div>
-    <div class="film-back" onclick="goTo('home')">Browse</div>
-    <div class="film-hero-content">
-      <div class="film-badge">BBP Original · Documentary Short</div>
-      <div class="film-title">FRESHMAN SUMMER</div>
-      <div class="film-meta-row">
-        <span>2026</span><span class="film-meta-sep">·</span>
-        <span>Short</span><span class="film-meta-sep">·</span>
-        <span>Documentary</span><span class="film-meta-sep">·</span>
-        <span>Pre-Production</span>
-      </div>
-      <div class="film-actions">
-        <button class="btn-primary" style="opacity:0.5;cursor:default">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px"><path d="M8 5v14l11-7z"/></svg>
-          Not Yet Available
-        </button>
-        <button class="btn-secondary" onclick="goTo('locked')">+ Watchlist</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="film-body">
-    <div>
-      <div class="film-desc">
-        <p>Freshman Summer is a documentary short capturing the final chapter of Haywood Middle School's Class of 2026. Cinematic. Verite. A real portrait of what this year meant.</p>
-        <p>The film opens with a chaotic high-energy sequence before settling into a softer, nostalgic documentary tone — mirroring the emotional arc of finishing 8th grade.</p>
-      </div>
-      <div class="film-acts-title">Film Structure</div>
-      <div class="film-acts">
-        <div class="film-act">
-          <div class="act-n">I</div>
-          <div class="act-text">
-            <div class="act-name-sm">TITLE SEQUENCE</div>
-            <div class="act-desc-sm">Chaotic black-and-white flashing intro. Brat green title card. High energy — sets the tone before the pull-in.</div>
-          </div>
-        </div>
-        <div class="film-act">
-          <div class="act-n">II</div>
-          <div class="act-text">
-            <div class="act-name-sm">THE BRIDGE</div>
-            <div class="act-desc-sm">Deliberate tonal shift — chaos to warmth. The documentary voice takes over.</div>
-          </div>
-        </div>
-        <div class="film-act">
-          <div class="act-n">III</div>
-          <div class="act-text">
-            <div class="act-name-sm">THE YEAR</div>
-            <div class="act-desc-sm">The heart of the film. Classmates, moments, memories — the Class of 2026's final chapter.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="film-sidebar">
-      <div class="sidebar-block">
-        <div class="sidebar-label">Director</div>
-        <div class="sidebar-value">Khalil Tolbert</div>
-      </div>
-      <div class="sidebar-block">
-        <div class="sidebar-label">Production</div>
-        <div class="sidebar-value">Big Boy Pictures</div>
-      </div>
-      <div class="sidebar-block">
-        <div class="sidebar-label">Format</div>
-        <div class="sidebar-value">Documentary Short</div>
-      </div>
-      <div class="sidebar-block">
-        <div class="sidebar-label">Subject</div>
-        <div class="sidebar-value">Haywood Middle School — Class of 2026</div>
-      </div>
-      <div class="sidebar-block">
-        <div class="sidebar-label">Status</div>
-        <div class="sidebar-value sidebar-status-dev">Pre-Production</div>
-      </div>
-    </div>
-  </div>
-  <footer>
-    <div>© 2026 Big Boy Pictures</div>
-    <span>FRESHMAN SUMMER</span>
     <div>BBP Original</div>
   </footer>
 </div>
